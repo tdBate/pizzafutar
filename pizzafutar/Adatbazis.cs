@@ -8,7 +8,7 @@ public class Adatbazis
 
     public Adatbazis()
     {
-        this.connectionstring = "server=localhost;database=pizzafutár;user=root;password=''";
+        this.connectionstring = "server=localhost;database=Pizzafutár;user=root;password=";
     }
 
     public List<Rendeles> Feltolt()
@@ -16,10 +16,10 @@ public class Adatbazis
         List<Rendeles> lista = new List<Rendeles>();
         Dictionary<int, Pizza> pizzak = new Dictionary<int, Pizza>();
         Dictionary<int, Cim> cimek = new Dictionary<int, Cim>();
-        
+
         try
         {
-            using (MySqlConnection conn = new MySqlConnection())
+            using (MySqlConnection conn = new MySqlConnection(this.connectionstring))
             {
                 conn.Open();
                 string query = "SELECT * FROM pizza";
@@ -40,8 +40,8 @@ public class Adatbazis
                         }
                     }
                 }
-                
-                
+
+
                 query = "SELECT * FROM cim";
                 using (MySqlCommand command = new MySqlCommand(query, conn))
                 {
@@ -60,8 +60,8 @@ public class Adatbazis
                         }
                     }
                 }
-                
-                query = "SELECT * FROM rendelesek";
+
+                query = "SELECT * FROM rendeles";
                 using (MySqlCommand command = new MySqlCommand(query, conn))
                 {
                     using (MySqlDataReader reader = command.ExecuteReader())
@@ -69,20 +69,30 @@ public class Adatbazis
                         while (reader.Read())
                         {
                             int id = reader.GetInt32("id");
-                            
+                            Pizza p = pizzak[reader.GetInt32("pizzaid")];
+                            Cim c = cimek[reader.GetInt32("cimid")];
+                            int db = reader.GetInt32("darab");
+                            TimeSpan t = reader.GetTimeSpan("szallitas");
+
+                            lista.Add(new Rendeles(id, p, db, c, t));
                         }
                     }
                 }
 
             }
         }
-        catch (Exception e)
+        catch (MySqlException e)
         {
             Console.WriteLine(e);
-            throw;
+            Environment.Exit(0);
         }
-        
-        
+        catch (Exception e)
+        {
+            Console.WriteLine();
+            Environment.Exit(0);
+        }
+
+
         return lista;
     }
 }
